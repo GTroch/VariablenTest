@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz: Variablen, Objekte & Parameter – Klassen Konto & Bank</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e8eaf0;line-height:1.6;min-height:100vh}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,#1a3a5c,#2e75b6);padding:28px 24px;text-align:center;border-bottom:3px solid #4a9edd}
+header h1{font-size:1.8rem;color:#fff;margin-bottom:6px}
+header p{color:rgba(255,255,255,.75);font-size:.95rem}
+
+/* ── Layout ── */
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 60px}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:10px 20px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;border:2px solid transparent;transition:all .2s;background:#1e2130;color:#8899bb}
+.tab.active{background:#2e75b6;color:#fff;border-color:#4a9edd}
+.tab:hover:not(.active){background:#252a3a;color:#cdd6f4}
+
+/* ── Mode selector ── */
+.mode-bar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.mode-btn{padding:7px 16px;border-radius:20px;cursor:pointer;font-size:.83rem;font-weight:600;border:1px solid #445;background:#1a1f2e;color:#8899bb;transition:all .2s}
+.mode-btn.active{background:#f9e2af;color:#1a1a00;border-color:#f9e2af}
+.mode-label{font-size:.82rem;color:#666;margin-left:4px}
+
+/* ── Score bar ── */
+.scorebar{background:#1e2130;border-radius:10px;padding:12px 20px;margin-bottom:18px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.sco-item{font-size:.85rem;color:#8899bb}
+.sco-item strong{color:#cdd6f4;font-size:1rem}
+.prog-bg{flex:1;min-width:160px;background:#2a2f42;border-radius:8px;height:10px}
+.prog-fill{height:10px;border-radius:8px;background:linear-gradient(90deg,#2e75b6,#48c774);transition:width .5s}
+
+/* ── Begriffe (Legende) ── */
+.begriffe{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:22px}
+.begriff{border-radius:8px;padding:12px 14px;font-size:.85rem}
+.bg-glob{background:rgba(213,232,240,.1);border-left:4px solid #5b9bd5}
+.bg-lok{background:rgba(213,240,213,.1);border-left:4px solid #70b870}
+.bg-par{background:rgba(250,232,208,.1);border-left:4px solid #e0a060}
+.bg-obj{background:rgba(232,213,240,.1);border-left:4px solid #a878c8}
+.begriff strong{display:block;margin-bottom:4px;font-size:.88rem}
+
+/* ── Flashcard mode ── */
+.card-wrap{perspective:900px}
+.card{width:100%;min-height:220px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.card.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;width:100%;min-height:220px;backface-visibility:hidden;border-radius:12px;padding:28px 32px;display:flex;flex-direction:column;justify-content:center}
+.card-front{background:#1e2130;border:2px solid #2e75b6}
+.card-back{background:#1a2e1a;border:2px solid #48c774;transform:rotateY(180deg)}
+.card-hint{font-size:.75rem;color:#556;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.card-class{display:inline-block;background:#2e75b6;color:#fff;border-radius:4px;padding:2px 10px;font-size:.78rem;margin-bottom:10px}
+.card-name{font-family:'Cascadia Code','Consolas',monospace;font-size:1.6rem;color:#cdd6f4;margin-bottom:8px}
+.card-kat{font-size:.82rem;padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:10px}
+.kat-glob{background:rgba(91,155,213,.2);color:#89bcdb}
+.kat-lok{background:rgba(112,184,112,.2);color:#80c880}
+.kat-par{background:rgba(224,160,96,.2);color:#d4a060}
+.kat-obj{background:rgba(168,120,200,.2);color:#c090e0}
+.card-back .card-name{color:#a6e3a1;font-size:1.3rem}
+.card-back .def{color:#cdd6f4;font-size:.95rem;line-height:1.7}
+.card-back .typ-label{font-family:'Cascadia Code',monospace;color:#f9e2af;font-size:.9rem;margin-top:6px}
+.card-nav{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:9px 20px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;border:none;transition:all .2s}
+.btn-primary{background:#2e75b6;color:#fff}
+.btn-primary:hover{background:#3a8fd6}
+.btn-success{background:#48c774;color:#0a1a0a}
+.btn-success:hover{background:#5ad884}
+.btn-danger{background:#f38ba8;color:#1a0008}
+.btn-danger:hover{background:#ff9fbd}
+.btn-ghost{background:#252a3a;color:#8899bb;border:1px solid #334}
+.btn-ghost:hover{background:#2e3448;color:#cdd6f4}
+.card-counter{color:#556;font-size:.82rem;margin-left:auto;padding-top:6px}
+
+/* ── Filter chips ── */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:5px 13px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:600;border:1px solid transparent;transition:all .2s;background:#1a1f2e;color:#8899bb}
+.chip.on{color:#1a1a2e}
+.chip-all.on{background:#cdd6f4;border-color:#cdd6f4}
+.chip-glob.on{background:#5b9bd5;border-color:#5b9bd5}
+.chip-lok.on{background:#70b870;border-color:#70b870}
+.chip-par.on{background:#e0a060;border-color:#e0a060}
+.chip-obj.on{background:#a878c8;border-color:#a878c8}
+.chip-konto.on{background:#89dceb;border-color:#89dceb;color:#001a1a}
+.chip-bank.on{background:#cba6f7;border-color:#cba6f7;color:#0d001a}
+
+/* ── Type-in Quiz mode ── */
+.quiz-list{display:flex;flex-direction:column;gap:14px}
+.quiz-item{background:#1e2130;border-radius:10px;padding:18px 22px;border:2px solid #2a2f42;transition:border-color .2s}
+.quiz-item.correct{border-color:#48c774;background:#0f1f0f}
+.quiz-item.wrong{border-color:#f38ba8;background:#1f0f14}
+.qi-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.qi-name{font-family:'Cascadia Code','Consolas',monospace;font-size:1.1rem;color:#cdd6f4}
+.qi-class{font-size:.75rem;background:#2a3050;color:#89bcdb;padding:2px 8px;border-radius:4px}
+.qi-q{font-size:.88rem;color:#8899bb;margin-bottom:8px}
+.qi-inputs{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.qi-in{background:#13161f;border:2px solid #2a3050;border-radius:6px;padding:6px 12px;font-family:'Cascadia Code','Consolas',monospace;font-size:.9rem;color:#f9e2af;outline:none;transition:border-color .2s;min-width:120px}
+.qi-in:focus{border-color:#2e75b6}
+.qi-in.correct{border-color:#48c774;color:#a6e3a1;background:#0a1f0a}
+.qi-in.wrong{border-color:#f38ba8;color:#f38ba8}
+.qi-label{font-size:.78rem;color:#556}
+.qi-reveal{display:none;background:#0a1f0a;border:1px solid #48c774;border-radius:6px;padding:8px 14px;margin-top:8px;font-size:.88rem;color:#a6e3a1;line-height:1.6}
+.qi-reveal.show{display:block}
+.qi-btn{padding:5px 12px;font-size:.78rem;border-radius:5px;cursor:pointer;background:#252a3a;color:#8899bb;border:1px solid #334;transition:all .2s;margin-left:auto}
+.qi-btn:hover{background:#2e3448;color:#cdd6f4}
+.qi-btn.unlocked{background:#f9e2af20;border-color:#f9e2af;color:#f9e2af}
+
+/* ── Match mode ── */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.match-col h3{color:#8899bb;font-size:.82rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.match-item{background:#1e2130;border:2px solid #2a2f42;border-radius:8px;padding:11px 15px;cursor:pointer;transition:all .2s;font-size:.9rem}
+.match-item:hover{border-color:#2e75b6}
+.match-item.selected{border-color:#f9e2af;background:#1f1a00}
+.match-item.matched-ok{border-color:#48c774;background:#0f1f0f;cursor:default}
+.match-item.matched-wrong{border-color:#f38ba8;animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.match-name{font-family:'Cascadia Code','Consolas',monospace;color:#cdd6f4}
+.match-def{color:#8899bb;font-size:.83rem}
+.match-result{text-align:center;font-size:1.1rem;color:#a6e3a1;margin-top:14px;display:none}
+.match-result.show{display:block}
+
+/* ── Utility ── */
+.hidden{display:none!important}
+.section{display:none}.section.active{display:block}
+.empty-state{text-align:center;color:#445;padding:40px;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔍 Quiz: Variablen, Objekte &amp; Parameter</h1>
+  <p>Klassen Konto &amp; Bank &nbsp;·&nbsp; Informatik Klasse 9</p>
+</header>
+
+<div class="wrap">
+
+  <!-- Begriffe -->
+  <div class="begriffe">
+    <div class="begriff bg-glob"><strong>🔵 Globale Variable (Attribut)</strong>Direkt in der Klasse deklariert, in allen Methoden sichtbar, gehört zum Objekt.</div>
+    <div class="begriff bg-lok"><strong>🟢 Lokale Variable</strong>Innerhalb einer Methode deklariert, nur dort sichtbar, endet mit der Methode.</div>
+    <div class="begriff bg-par"><strong>🟠 Parameter</strong>Im Methodenkopf deklariert, wird beim Aufruf übergeben, verhält sich wie lokal.</div>
+    <div class="begriff bg-obj"><strong>🟣 Objekt / Referenz</strong>Mit <code style="font-size:.85em">new</code> erzeugtes Exemplar einer Klasse. Variable speichert Referenz darauf.</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('flash')">🃏 Karteikarten</div>
+    <div class="tab" onclick="switchTab('quiz')">✍️ Eingabe-Quiz</div>
+    <div class="tab" onclick="switchTab('match')">🔗 Zuordnung</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 1: KARTEIKARTEN
+  ══════════════════════════════════════════ -->
+  <div class="section active" id="sec-flash">
+    <!-- Filter -->
+    <div class="filters" id="flash-filters">
+      <span class="chip chip-all on" onclick="toggleChip(this,'all')">Alle</span>
+      <span class="chip chip-glob" onclick="toggleChip(this,'global')">🔵 Globale Var.</span>
+      <span class="chip chip-lok"  onclick="toggleChip(this,'lokal')">🟢 Lokale Var.</span>
+      <span class="chip chip-par"  onclick="toggleChip(this,'param')">🟠 Parameter</span>
+      <span class="chip chip-obj"  onclick="toggleChip(this,'objekt')">🟣 Objekte</span>
+      <span class="chip chip-konto" onclick="toggleChip(this,'konto')">Klasse Konto</span>
+      <span class="chip chip-bank"  onclick="toggleChip(this,'bank')">Klasse Bank</span>
+    </div>
+
+    <!-- Score -->
+    <div class="scorebar">
+      <div class="sco-item">Bekannt: <strong id="f-known">0</strong></div>
+      <div class="sco-item">Üben: <strong id="f-learn">0</strong></div>
+      <div class="sco-item">Noch offen: <strong id="f-left">0</strong></div>
+      <div class="prog-bg"><div class="prog-fill" id="f-bar" style="width:0"></div></div>
+      <button class="btn btn-ghost" onclick="resetFlash()" style="font-size:.78rem;padding:5px 12px">↺ Neu starten</button>
+    </div>
+
+    <!-- Card -->
+    <div class="card-wrap">
+      <div class="card" id="flashcard" onclick="flipCard()">
+        <div class="card-face card-front">
+          <div class="card-hint">Was ist das? Klicke zum Aufdecken</div>
+          <div class="card-class" id="f-class">Konto</div>
+          <div class="card-name" id="f-name">inhaber</div>
+          <div id="f-kat" class="card-kat kat-glob">Globale Variable</div>
+          <div style="font-size:.82rem;color:#445;margin-top:12px">In welcher Methode / Klasse? Welchen Typ hat diese Variable?</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-hint">Lösung</div>
+          <div class="card-name" id="f-answer">inhaber</div>
+          <div class="typ-label" id="f-typ">String</div>
+          <div class="def" id="f-def">Name des Kontoinhabers. Wird im Konstruktor gesetzt.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-nav">
+      <button class="btn btn-danger" onclick="markCard('learn')">✗ Noch üben</button>
+      <button class="btn btn-success" onclick="markCard('known')">✓ Bekannt</button>
+      <button class="btn btn-ghost" onclick="skipCard()">→ Überspringen</button>
+      <span class="card-counter" id="f-counter">1 / 30</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 2: EINGABE-QUIZ
+  ══════════════════════════════════════════ -->
+  <div class="section" id="sec-quiz">
+    <div class="mode-bar">
+      <span class="mode-label">Frage nach:</span>
+      <button class="mode-btn active" id="qmode-typ" onclick="setQMode('typ')">Datentyp</button>
+      <button class="mode-btn" id="qmode-kat" onclick="setQMode('kat')">Kategorie</button>
+      <button class="mode-btn" id="qmode-def" onclick="setQMode('def')">Bedeutung</button>
+    </div>
+    <div class="scorebar">
+      <div class="sco-item">Richtig: <strong id="q-ok">0</strong></div>
+      <div class="sco-item">Falsch: <strong id="q-err">0</strong></div>
+      <div class="prog-bg"><div class="prog-fill" id="q-bar" style="width:0"></div></div>
+    </div>
+    <div class="quiz-list" id="quiz-list"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 3: ZUORDNUNG
+  ══════════════════════════════════════════ -->
+  <div class="section" id="sec-match">
+    <div class="mode-bar">
+      <span class="mode-label">Set:</span>
+      <button class="mode-btn active" id="ms-1" onclick="loadMatchSet(1)">Set 1 – Typen</button>
+      <button class="mode-btn" id="ms-2" onclick="loadMatchSet(2)">Set 2 – Kategorien</button>
+      <button class="mode-btn" id="ms-3" onclick="loadMatchSet(3)">Set 3 – Bedeutungen</button>
+    </div>
+    <div class="scorebar">
+      <div class="sco-item">Richtig: <strong id="m-ok">0</strong></div>
+      <div class="sco-item">Falsch: <strong id="m-err">0</strong></div>
+      <button class="btn btn-ghost" onclick="loadMatchSet(currentMatchSet)" style="font-size:.78rem;padding:5px 12px;margin-left:auto">↺ Neu</button>
+    </div>
+    <div class="match-grid">
+      <div><h3>Bezeichner</h3><div id="match-left"></div></div>
+      <div><h3>Zuordnung</h3><div id="match-right"></div></div>
+    </div>
+    <div class="match-result" id="match-result">🎉 Alle richtig! Klasse!</div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+/* ══════════════════════════════════════════════════════
+   DATA: Alle Einträge
+   { name, typ, kat, klasse, methode, def }
+   kat: global | lokal | param | objekt
+   klasse: konto | bank
+══════════════════════════════════════════════════════ */
+const DATA = [
+  // ── KONTO – globale Variablen ──
+  {name:"inhaber",             typ:"String",           kat:"global", klasse:"konto", methode:"Konto (Attribut)",            def:"Name des Kontoinhabers. Wird im Konstruktor gesetzt und von getInhaber() zurückgegeben."},
+  {name:"kontostand",          typ:"double",            kat:"global", klasse:"konto", methode:"Konto (Attribut)",            def:"Aktueller Kontostand in Euro. Wird durch einzahlen(), abheben() und ueberweisen() verändert."},
+  {name:"kontonummer",         typ:"int",               kat:"global", klasse:"konto", methode:"Konto (Attribut)",            def:"Eindeutige Identifikationsnummer des Kontos. Wird einmalig im Konstruktor gesetzt."},
+  {name:"ueberziehungsLimit",  typ:"double",            kat:"global", klasse:"konto", methode:"Konto (Attribut)",            def:"Maximaler Betrag, um den das Konto überzogen werden darf (als negativer Wert)."},
+  // ── KONTO – Konstruktor-Parameter ──
+  {name:"nummer",              typ:"int",               kat:"param",  klasse:"konto", methode:"Konto-Konstruktor",           def:"Konstruktor-Parameter → wird als kontonummer gespeichert."},
+  {name:"name",                typ:"String",            kat:"param",  klasse:"konto", methode:"Konto-Konstruktor",           def:"Konstruktor-Parameter → wird als inhaber gespeichert."},
+  {name:"startBetrag",         typ:"double",            kat:"param",  klasse:"konto", methode:"Konto-Konstruktor",           def:"Konstruktor-Parameter → wird als kontostand gespeichert."},
+  {name:"limit",               typ:"double",            kat:"param",  klasse:"konto", methode:"Konto-Konstruktor",           def:"Konstruktor-Parameter → wird als ueberziehungsLimit gespeichert."},
+  // ── KONTO – Methoden-Parameter ──
+  {name:"betrag",              typ:"double",            kat:"param",  klasse:"konto", methode:"einzahlen / abheben / ueberweisen", def:"Der Geldbetrag, der eingezahlt, abgehoben oder überwiesen werden soll."},
+  {name:"zielKonto",           typ:"Konto",             kat:"objekt", klasse:"konto", methode:"ueberweisen()",               def:"Referenz auf das Konto-Objekt, das den überwiesenen Betrag erhalten soll."},
+  {name:"zinssatzInProzent",   typ:"double",            kat:"param",  klasse:"konto", methode:"zinsenGutschreiben()",        def:"Zinssatz in Prozent (z.B. 2.5 für 2,5 %). Wird zur Berechnung der Zinsen verwendet."},
+  {name:"zinsBetrag",          typ:"double",            kat:"lokal",  klasse:"konto", methode:"zinsenGutschreiben()",        def:"Lokale Variable: berechneter Zinsbetrag = kontostand × zinssatzInProzent / 100. Nur innerhalb der Methode sichtbar."},
+  {name:"neuerName",           typ:"String",            kat:"param",  klasse:"konto", methode:"setInhaber()",                def:"Neuer Inhabername, der in inhaber gespeichert wird."},
+  {name:"neuerStand",          typ:"double",            kat:"param",  klasse:"konto", methode:"setKontostand()",             def:"Neuer Kontostand, der direkt in kontostand gespeichert wird."},
+  {name:"neuesLimit",          typ:"double",            kat:"param",  klasse:"konto", methode:"setUeberziehungsLimit()",     def:"Neue Überziehungsgrenze, die in ueberziehungsLimit gespeichert wird."},
+  // ── BANK – globale Variablen ──
+  {name:"bankName",            typ:"String",            kat:"global", klasse:"bank",  methode:"Bank (Attribut)",             def:"Name der Bank. Wird im Konstruktor gesetzt und in alleKontenAnzeigen() ausgegeben."},
+  {name:"kontenListe",         typ:"ArrayList<Konto>",  kat:"objekt", klasse:"bank",  methode:"Bank (Attribut)",             def:"Globales Objekt: enthält alle Konto-Objekte der Bank. Mit new ArrayList<Konto>() im Konstruktor initialisiert."},
+  {name:"naechsteKontonummer", typ:"int",               kat:"global", klasse:"bank",  methode:"Bank (Attribut)",             def:"Zähler für die nächste Kontonummer. Startet bei 1001, wird nach jedem Konto um 1 erhöht."},
+  // ── BANK – Konstruktor ──
+  {name:"name",                typ:"String",            kat:"param",  klasse:"bank",  methode:"Bank-Konstruktor",            def:"Konstruktor-Parameter → wird als bankName gespeichert."},
+  // ── BANK – kontoEroeffnen ──
+  {name:"inhaber",             typ:"String",            kat:"param",  klasse:"bank",  methode:"kontoEroeffnen()",            def:"Name des Inhabers des neuen Kontos."},
+  {name:"startBetrag",         typ:"double",            kat:"param",  klasse:"bank",  methode:"kontoEroeffnen()",            def:"Startbetrag des neuen Kontos."},
+  {name:"limit (Bank)",        typ:"double",            kat:"param",  klasse:"bank",  methode:"kontoEroeffnen()",            def:"Überziehungsgrenze des neuen Kontos."},
+  {name:"neuesKonto",          typ:"Konto",             kat:"objekt", klasse:"bank",  methode:"kontoEroeffnen()",            def:"Lokales Objekt: das neu angelegte Konto. Wird der Liste hinzugefügt und zurückgegeben."},
+  // ── BANK – kontoSuchen ──
+  {name:"nummer",              typ:"int",               kat:"param",  klasse:"bank",  methode:"kontoSuchen()",               def:"Die gesuchte Kontonummer. Wird mit jedem k.getKontonummer() verglichen."},
+  {name:"k (kontoSuchen)",     typ:"Konto",             kat:"objekt", klasse:"bank",  methode:"kontoSuchen()",               def:"Schleifenvariable der for-each-Schleife: Referenz auf das aktuell geprüfte Konto-Objekt."},
+  // ── BANK – alleKontenAnzeigen ──
+  {name:"i",                   typ:"int",               kat:"lokal",  klasse:"bank",  methode:"alleKontenAnzeigen()",        def:"Laufvariable der Zähl-for-Schleife: Index von 0 bis kontenListe.size()-1."},
+  // ── BANK – gesamtguthabenBerechnen ──
+  {name:"summe",               typ:"double",            kat:"lokal",  klasse:"bank",  methode:"gesamtguthabenBerechnen()",   def:"Akkumulator-Variable: sammelt die Summe aller Kontostände. Startet bei 0."},
+  {name:"k (berechnen)",       typ:"Konto",             kat:"objekt", klasse:"bank",  methode:"gesamtguthabenBerechnen()",   def:"Schleifenvariable der for-each-Schleife in gesamtguthabenBerechnen()."},
+  // ── BANK – main ──
+  {name:"args",                typ:"String[]",          kat:"param",  klasse:"bank",  methode:"main()",                      def:"Parameter der main()-Methode: Array von Kommandozeilenargumenten (meist nicht verwendet)."},
+  {name:"meine",               typ:"Bank",              kat:"objekt", klasse:"bank",  methode:"main()",                      def:"Lokales Objekt: das Bank-Objekt, mit dem in main() gearbeitet wird."},
+  {name:"k1 / k2 / k3",       typ:"Konto",             kat:"objekt", klasse:"bank",  methode:"main()",                      def:"Lokale Objekte in main(): Referenzen auf die angelegten Konto-Objekte (z.B. Anna, Ben, Clara)."},
+];
+
+const KAT_LABEL = {global:"Globale Variable",lokal:"Lokale Variable",param:"Parameter",objekt:"Objekt / Referenz"};
+const KAT_CLASS = {global:"kat-glob",lokal:"kat-lok",param:"kat-par",objekt:"kat-obj"};
+const KAT_CHIP  = {global:"chip-glob",lokal:"chip-lok",param:"chip-par",objekt:"chip-obj"};
+
+/* ══════════════════════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════════════════════ */
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active', ['flash','quiz','match'][i]===id);
+  });
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(id==='quiz') buildQuiz();
+  if(id==='match') loadMatchSet(1);
+}
+
+/* ══════════════════════════════════════════════════════
+   FLASH CARDS
+══════════════════════════════════════════════════════ */
+let flashFilters = {kat:new Set(['all']), klasse:new Set()};
+let flashDeck = [], flashIdx = 0, flashKnown = new Set(), flashLearn = new Set();
+
+function getFilteredDeck(){
+  return DATA.filter(d=>{
+    const katOk = flashFilters.kat.has('all') || flashFilters.kat.has(d.kat);
+    const klOk  = flashFilters.klasse.size===0 || flashFilters.klasse.has(d.klasse);
+    return katOk && klOk;
+  });
+}
+
+function toggleChip(el, key){
+  const isKlasse = key==='konto'||key==='bank';
+  const isAll    = key==='all';
+  if(isAll){
+    flashFilters.kat.clear(); flashFilters.kat.add('all');
+    flashFilters.klasse.clear();
+    document.querySelectorAll('#flash-filters .chip').forEach(c=>{
+      c.classList.toggle('on', c===el);
+    });
+  } else if(isKlasse){
+    if(flashFilters.klasse.has(key)) flashFilters.klasse.delete(key);
+    else flashFilters.klasse.add(key);
+    el.classList.toggle('on', flashFilters.klasse.has(key));
+  } else {
+    flashFilters.kat.delete('all');
+    document.querySelector('.chip-all').classList.remove('on');
+    if(flashFilters.kat.has(key)) flashFilters.kat.delete(key);
+    else flashFilters.kat.add(key);
+    el.classList.toggle('on', flashFilters.kat.has(key));
+    if(flashFilters.kat.size===0){flashFilters.kat.add('all'); document.querySelector('.chip-all').classList.add('on');}
+  }
+  flashDeck = shuffle([...getFilteredDeck()]);
+  flashKnown.clear(); flashLearn.clear(); flashIdx=0;
+  showCard();
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function showCard(){
+  document.getElementById('flashcard').classList.remove('flipped');
+  const remaining = flashDeck.filter((_,i)=>!flashKnown.has(i));
+  const total = flashDeck.length;
+  const known = flashKnown.size;
+  const learn = flashLearn.size;
+  document.getElementById('f-known').textContent = known;
+  document.getElementById('f-learn').textContent = learn;
+  document.getElementById('f-left').textContent = total - known;
+  document.getElementById('f-bar').style.width = total ? (known/total*100)+'%' : '0';
+
+  if(remaining.length===0){
+    document.getElementById('f-name').textContent = '🎉 Alle bekannt!';
+    document.getElementById('f-class').textContent = '';
+    document.getElementById('f-kat').textContent = '';
+    document.getElementById('f-answer').textContent = 'Super gemacht!';
+    document.getElementById('f-typ').textContent = '';
+    document.getElementById('f-def').textContent = 'Alle Karten dieser Auswahl sind bekannt.';
+    document.getElementById('f-counter').textContent = '';
+    return;
+  }
+
+  // Find next not-known card starting from flashIdx
+  let found = -1;
+  for(let i=0;i<flashDeck.length;i++){
+    const idx = (flashIdx+i)%flashDeck.length;
+    if(!flashKnown.has(idx)){found=idx;break;}
+  }
+  flashIdx = found;
+  const d = flashDeck[flashIdx];
+  document.getElementById('f-class').textContent = d.klasse==='konto'?'Klasse Konto':'Klasse Bank';
+  document.getElementById('f-name').textContent = d.name;
+  const katEl = document.getElementById('f-kat');
+  katEl.textContent = KAT_LABEL[d.kat];
+  katEl.className = 'card-kat '+KAT_CLASS[d.kat];
+  document.getElementById('f-answer').textContent = d.name;
+  document.getElementById('f-typ').textContent = 'Typ: '+d.typ+' · '+d.methode;
+  document.getElementById('f-def').textContent = d.def;
+  document.getElementById('f-counter').textContent = (flashKnown.size+1)+' / '+flashDeck.length;
+}
+
+function flipCard(){ document.getElementById('flashcard').classList.toggle('flipped'); }
+function markCard(verdict){
+  if(verdict==='known') flashKnown.add(flashIdx);
+  else { flashLearn.add(flashIdx); flashKnown.delete(flashIdx); }
+  flashIdx = (flashIdx+1)%flashDeck.length;
+  showCard();
+}
+function skipCard(){ flashIdx=(flashIdx+1)%flashDeck.length; showCard(); }
+function resetFlash(){ flashKnown.clear(); flashLearn.clear(); flashDeck=shuffle([...getFilteredDeck()]); flashIdx=0; showCard(); }
+
+// init
+flashDeck = shuffle([...DATA]);
+showCard();
+
+/* ══════════════════════════════════════════════════════
+   EINGABE-QUIZ
+══════════════════════════════════════════════════════ */
+let qMode = 'typ', qOk = 0, qErr = 0;
+
+const KAT_SHORT = {global:"global",lokal:"lokal",param:"param",objekt:"objekt"};
+
+function setQMode(m){
+  qMode = m;
+  document.querySelectorAll('[id^=qmode-]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('qmode-'+m).classList.add('active');
+  buildQuiz();
+}
+
+function buildQuiz(){
+  qOk=0; qErr=0; updateQScore();
+  const deck = shuffle([...DATA]).slice(0,16);
+  const container = document.getElementById('quiz-list');
+  container.innerHTML='';
+  deck.forEach((d,i)=>{
+    const item = document.createElement('div');
+    item.className='quiz-item'; item.id='qi'+i;
+
+    let question='', answerKey='', placeholder='';
+    if(qMode==='typ'){
+      question=`Welchen <strong>Datentyp</strong> hat <code>${d.name}</code> (${d.methode})?`;
+      answerKey=d.typ; placeholder='Typ eingeben…';
+    } else if(qMode==='kat'){
+      question=`Zu welcher <strong>Kategorie</strong> gehört <code>${d.name}</code>?<br><em style="font-size:.8rem;color:#556">(global / lokal / param / objekt)</em>`;
+      answerKey=KAT_SHORT[d.kat]; placeholder='Kategorie…';
+    } else {
+      question=`Beschreibe kurz die <strong>Bedeutung</strong> von <code>${d.name}</code> (${d.methode}).`;
+      answerKey=''; placeholder='Bedeutung eingeben…';
+    }
+
+    item.innerHTML=`
+      <div class="qi-top">
+        <span class="qi-name">${d.name}</span>
+        <span class="qi-class">${d.klasse==='konto'?'Konto':'Bank'}</span>
+        <span class="qi-class ${KAT_CLASS[d.kat]}" style="background:rgba(255,255,255,.07)">${KAT_LABEL[d.kat]}</span>
+        <button class="qi-btn" id="qbtn${i}" onclick="revealQItem(${i},'${encodeURIComponent(d.def)}')">Lösung</button>
+      </div>
+      <div class="qi-q">${question}</div>
+      <div class="qi-inputs">
+        <input class="qi-in" id="qin${i}" data-answer="${encodeURIComponent(answerKey)}" data-idx="${i}" placeholder="${placeholder}"
+               oninput="checkQInput(this)" style="min-width:${qMode==='def'?'100%':'160px'}">
+        ${qMode!=='def'?'<span class="qi-label" id="qlbl'+i+'"></span>':''}
+      </div>
+      <div class="qi-reveal" id="qrev${i}">${d.def.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function checkQInput(input){
+  const answer = decodeURIComponent(input.dataset.answer).trim().toLowerCase();
+  const val = input.value.trim().toLowerCase();
+  const idx = input.dataset.idx;
+  if(!answer || qMode==='def') return; // free-text: no auto-check
+
+  const exact = val===answer;
+  const close = answer.startsWith(val) && val.length>=2;
+  input.classList.toggle('correct',exact);
+  input.classList.toggle('wrong', val.length>0 && !exact && !close);
+
+  const lbl = document.getElementById('qlbl'+idx);
+  if(lbl) lbl.textContent = exact?'✓ Richtig!':(close?'…':'');
+
+  const item = document.getElementById('qi'+idx);
+  if(exact && !item.classList.contains('correct')){
+    item.classList.add('correct');
+    qOk++; updateQScore();
+  }
+  if(!exact && val.length>0 && !close && !item.classList.contains('correct')){
+    if(!item.classList.contains('wrong')){ item.classList.add('wrong'); qErr++; updateQScore(); }
+  }
+  // unlock Lösung button if wrong
+  const btn = document.getElementById('qbtn'+idx);
+  if(val.length>=3) btn.classList.add('unlocked');
+}
+
+function revealQItem(i, def){
+  const rev = document.getElementById('qrev'+i);
+  rev.classList.toggle('show');
+}
+
+function updateQScore(){
+  const total=document.querySelectorAll('.quiz-item').length;
+  document.getElementById('q-ok').textContent=qOk;
+  document.getElementById('q-err').textContent=qErr;
+  document.getElementById('q-bar').style.width=total?(qOk/total*100)+'%':'0';
+}
+
+/* ══════════════════════════════════════════════════════
+   ZUORDNUNG (MATCH)
+══════════════════════════════════════════════════════ */
+let currentMatchSet=1, mSel=null, mOk=0, mErr=0, mTotal=0;
+
+const MATCH_SETS = [
+  // Set 1: Name → Typ
+  ()=>{
+    const pairs = shuffle([...DATA]).slice(0,7).map(d=>({left:d.name,right:d.typ,id:d.name+d.typ}));
+    return {title:'Typ',pairs};
+  },
+  // Set 2: Name → Kategorie
+  ()=>{
+    const pairs = shuffle([...DATA]).slice(0,7).map(d=>({left:d.name,right:KAT_LABEL[d.kat],id:d.name+d.kat}));
+    return {title:'Kategorie',pairs};
+  },
+  // Set 3: Name → kurze Bedeutung (first 8 words)
+  ()=>{
+    const pairs = shuffle([...DATA]).slice(0,6).map(d=>{
+      const short = d.def.split(' ').slice(0,7).join(' ')+'…';
+      return {left:d.name,right:short,id:d.name};
+    });
+    return {title:'Bedeutung',pairs};
+  },
+];
+
+function loadMatchSet(n){
+  currentMatchSet=n;
+  mSel=null; mOk=0; mErr=0;
+  document.querySelectorAll('[id^=ms-]').forEach((b,i)=>b.classList.toggle('active',i+1===n));
+  document.getElementById('match-result').classList.remove('show');
+  const set = MATCH_SETS[n-1]();
+  mTotal = set.pairs.length;
+  updateMScore();
+
+  const lefts  = shuffle([...set.pairs]);
+  const rights = shuffle([...set.pairs]);
+
+  const lEl = document.getElementById('match-left');
+  const rEl = document.getElementById('match-right');
+  lEl.innerHTML=''; rEl.innerHTML='';
+
+  lefts.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='match-item'; d.dataset.id=p.id;
+    d.innerHTML=`<div class="match-name">${esc(p.left)}</div>`;
+    d.onclick=()=>selectLeft(d);
+    lEl.appendChild(d);
+  });
+  rights.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='match-item'; d.dataset.id=p.id;
+    d.innerHTML=`<div class="match-def">${esc(p.right)}</div>`;
+    d.onclick=()=>selectRight(d);
+    rEl.appendChild(d);
+  });
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function selectLeft(el){
+  if(el.classList.contains('matched-ok')) return;
+  document.querySelectorAll('#match-left .match-item').forEach(i=>i.classList.remove('selected'));
+  el.classList.add('selected');
+  mSel={side:'left',el};
+  tryMatch();
+}
+function selectRight(el){
+  if(el.classList.contains('matched-ok')) return;
+  document.querySelectorAll('#match-right .match-item').forEach(i=>i.classList.remove('selected'));
+  el.classList.add('selected');
+  mSel={side:'right',el};
+  // check if left is also selected
+  const leftSel = document.querySelector('#match-left .match-item.selected');
+  if(leftSel) checkMatch(leftSel, el);
+}
+function tryMatch(){
+  const leftSel  = document.querySelector('#match-left .match-item.selected');
+  const rightSel = document.querySelector('#match-right .match-item.selected');
+  if(leftSel && rightSel) checkMatch(leftSel, rightSel);
+}
+function checkMatch(l,r){
+  const ok = l.dataset.id === r.dataset.id;
+  if(ok){
+    l.classList.remove('selected'); r.classList.remove('selected');
+    l.classList.add('matched-ok');  r.classList.add('matched-ok');
+    mOk++;
+    if(mOk===mTotal){
+      document.getElementById('match-result').classList.add('show');
+    }
+  } else {
+    l.classList.add('matched-wrong'); r.classList.add('matched-wrong');
+    mErr++;
+    setTimeout(()=>{
+      l.classList.remove('selected','matched-wrong');
+      r.classList.remove('selected','matched-wrong');
+    }, 800);
+  }
+  updateMScore();
+}
+function updateMScore(){
+  document.getElementById('m-ok').textContent=mOk;
+  document.getElementById('m-err').textContent=mErr;
+}
+</script>
+</body>
+</html>
